@@ -1,0 +1,12 @@
+# Mac
+.DS_Store
+
+# JetBrains
+.idea/
+*.iml
+
+# VS Code
+.vscode
+
+# Flask
+.flaskenv
