@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        table, th, td {
+            border: 1px solid;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cybersafe</h1>
+
+    {% if session["username"] %}
+        <p>Welcome <b>{{ session["username"] }}</b></p>
+    {% endif %}
+
+    <ul>
+        <li><a href="/">Home</a></li>
+        {% if session["username"] %}
+            <li><a href="/resources">Protected resources</a></li>
+            <li><a href="/logout">Logout</a></li>
+        {% else %}
+            <li><a href="/login">Login</a></li>
+            <li><a href="/register">Register</a></li>
+        {% endif %}
+        <li><a href="/apidocs">API documentation</a></li>
+    </ul>
+
+    {% block body %}{% endblock %}
+
+</body>
+</html>

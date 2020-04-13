@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+
+    <h1>Register</h1>
+
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/register">Register</a></li>
+        <li><a href="/apidocs">API documentation</a></li>
+    </ul>
+
+    <label>Username: <input id="username" type="text" /></label><br />
+    <label>Password: <input id="password" type="password" /></label><br />
+    <button onclick="register()">Register</button>
+
+    <div id="display"></div>
+
+    <script>
+        function register() {
+            const req = new XMLHttpRequest();
+            const display = document.getElementById("display");
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            req.onload = () => {
+                let res = JSON.parse(req.responseText);
+                if (req.status !== 201)
+                    display.innerText = `Registration error: ${res.error}`;
+                else display.innerText = `Registration success, token: ${res.token}`;
+            };
+            req.open("POST", "/api/register");
+            req.setRequestHeader("Content-Type", "application/json");
+            req.send(JSON.stringify({
+                username: username,
+                password: password
+            }));
+        }
+    </script>
+
+</body>
+</html>

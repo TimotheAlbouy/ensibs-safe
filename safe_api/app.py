@@ -1,21 +1,83 @@
+import json
+
 from flask import Flask, request
-from flask_pymongo import PyMongo
-from flask_restplus import Api, Resource
+import pymongo
+from bson.objectid import ObjectId
+import zmq
+
+from constants import ZMQ_HOST, ZMQ_PORT, API_PORT
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/myDatabase"
-mongo = PyMongo(app)
-api = Api(app=app, version='0.1', title='Safe Api', description='REST Safe API', validate=True)
+
+dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
+db = dbclient.cybersafe
+
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
 
 
-@api.route('/resources/<int:id>')
-class SafeResource(Resource):
-    def get(self):
-        return 'Hello World!'
+def verify_token():
+    if "Authorization" not in request.headers:
+        return False
 
-    def post(self):
-        return
+    header = request.headers["Authorization"]
+    if not header.startswith("Bearer ") or len(header) < 8:
+        return False
+
+    token = header[7:]
+    token_req = {
+        "action": "verify",
+        "token": token
+    }
+    socket.send(json.dumps(token_req).encode("utf-8"))
+    token_res = json.loads(socket.recv().decode("utf-8"))
+
+    return token_res["valid"]
 
 
-if __name__ == '__main__':
-    app.run()
+@app.route("/resources/<string:id>", methods=["GET"])
+def get_resource(id):
+    valid_token = verify_token()
+    if not valid_token:
+        return {"error": "Authentication failed"}, 401
+
+    resource = db.resources.find_one({"_id": ObjectId(id)})
+    if resource is None:
+        return {"error": "Resource not found"}, 404
+
+    res = {"content": resource["content"]}
+    return res, 200
+
+
+@app.route("/resources", methods=["POST"])
+def create_resource():
+    valid_token = verify_token()
+    if not valid_token:
+        return {"error": "Authentication failed"}, 401
+
+    req = request.json
+    if type(req) is not dict:
+        return {"error": "Incorrect payload"}, 400
+
+    if "content" not in req:
+        return {"error": "Missing content parameter"}, 400
+
+    resource = db.resources.insert_one({"content": req["content"]})
+    res = {"id": str(resource.inserted_id)}
+    return res, 201
+
+
+@app.route("/resources", methods=["GET"])
+def get_resources():
+    valid_token = verify_token()
+    if not valid_token:
+        return {"error": "Authentication failed"}, 401
+
+    resources = [{"id": str(r["_id"])} for r in db.resources.find({}, {"content": 0})]
+    res = {"resources": resources}
+    return res, 200
+
+
+if __name__ == "__main__":
+    app.run(port=API_PORT)

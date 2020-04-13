@@ -1,47 +1,71 @@
-from datetime import datetime
-from token_dealer.constants import SECRET
+import datetime
+import json
 
 import zmq
 import jwt
-import json
+
+from constants import JWT_SECRET, JWT_ISSUER, JWT_ALGO, ZMQ_PORT
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
-socket.bind("tcp://*:5555")
+socket.bind("tcp://*:%s" % ZMQ_PORT)
 
-while True:
-    #  Wait for next request from client
-    req = socket.recv()
 
+def sign(username):
+    token = jwt.encode({
+        "iat": datetime.datetime.utcnow(),
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        "iss": JWT_ISSUER,
+        "sub": username
+    }, JWT_SECRET, algorithm=JWT_ALGO).decode("utf-8")
+    return token
+
+
+def verify(token):
     try:
-        req_message = req.decode()
-        print("Received request: %s" % req_message)
-        req_data = json.load(req_message)
+        # add admin claim?
+        data = jwt.decode(token.encode("utf-8"), JWT_SECRET, issuer=JWT_ISSUER, algorithm=JWT_ALGO)
+        return True, data["sub"]
+    except jwt.InvalidTokenError:
+        return False, None
 
-        if req_data.action == "sign":
-            username = req_data.username
-            token = jwt.encode({
-                "exp": datetime.utcnow()
-            }, SECRET)
-            res_data = {
-                "token": token
-            }
 
-        elif req_data.action == "verify":
-            token = req_data.token
-            res_data = {
-                "correct"
-            }
+def handle_request(data):
+    # If the request payload is not a JSON object
+    if type(data) is not dict:
+        return {"error": "Invalid request"}
 
-        else:
-            res_data = None
+    # If the action parameter is not specified
+    if "action" not in data:
+        return {"error": "Missing action parameter"}
 
-    except jwt.ExpiredSignatureError:
-        res_data = {
-            "error": "Invalid JWT"
-        }
+    # If it is a signing request
+    if data["action"] == "sign":
+        if "username" not in data:
+            return {"error": "Missing username parameter"}
+        token = sign(data["username"])
+        return {"token": token}
 
-    #  Send response back to client
-    res_message = json.dumps(res_data)
-    res = res_message.encode()
-    socket.send(res)
+    # If it is a verification request
+    if data["action"] == "verify":
+        if "token" not in data:
+            return {"error": "Missing token parameter"}
+        valid, username = verify(data["token"])
+        ret = {"valid": valid}
+        if valid:
+            ret["username"] = username
+        return ret
+
+    # If the given action is incorrect
+    return {"error": "Invalid action"}
+
+
+if __name__ == "__main__":
+    print("Token dealer running on port %s." % ZMQ_PORT)
+    while True:
+        # Wait for the next request from the client
+        req = json.loads(socket.recv().decode("utf-8"))
+        print("Received request:", req)
+        # Send the response back to the client
+        res = handle_request(req)
+        socket.send(json.dumps(res).encode("utf-8"))

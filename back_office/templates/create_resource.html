@@ -1,0 +1,10 @@
+{% extends "skeleton.html" %}
+
+{% block title %}Create protected resource{% endblock %}
+
+{% block body %}
+    <form method="POST">
+        <label><b>Content:</b> <input name="content" type="text" /></label><br />
+        <button type="submit">Create</button>
+    </form>
+{% endblock %}

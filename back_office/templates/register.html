@@ -1,0 +1,15 @@
+{% extends "skeleton.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    <form method="POST">
+        <label><b>Username:</b> <input name="username" type="text" /></label><br />
+        <label><b>Password:</b> <input name="password" type="password" /></label><br />
+        <button type="submit">Login</button>
+    </form>
+
+    {% if error %}
+        <p><b>Error:</b> {{ error }}</p>
+    {% endif %}
+{% endblock %}

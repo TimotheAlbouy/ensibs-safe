@@ -1,0 +1,64 @@
+{% extends "skeleton.html" %}
+
+{% block title %}API documentation{% endblock %}
+
+{% block body %}
+    <h2>Users API: {{ users_api }}</h2>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>URL</th>
+            <th>Parameters</th>
+            <th>Authentication</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td>/register</td>
+            <td>string:username; string:password</td>
+            <td>Yes</td>
+            <td>Register a new user</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td>/login</td>
+            <td>string:username; string:password</td>
+            <td>Yes</td>
+            <td>Log the user in</td>
+        </tr>
+    </table>
+
+    <h2>Safe API: {{ safe_api }}</h2>
+
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>URL</th>
+            <th>Parameters</th>
+            <th>Authentication</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <th>GET</th>
+            <th>/resources</th>
+            <th>/</th>
+            <th>Yes</th>
+            <th>Get all the resource IDs</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td>/resources/&lt;id&gt;</td>
+            <td>/</td>
+            <th>Yes</th>
+            <td>Get the resource identified by the given ID</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td>/resources</td>
+            <td>string:content</td>
+            <th>Yes</th>
+            <td>Create the resource with the given content</td>
+        </tr>
+    </table>
+{% endblock %}

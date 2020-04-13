@@ -1,5 +1,6 @@
 flask
-flask_restplus
+requests
 pyzmq
 pyjwt
-Flask-PyMongo
+pymongo
+bcrypt
