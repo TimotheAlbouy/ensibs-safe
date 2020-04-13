@@ -3,8 +3,6 @@
 {% block title %}Protected resources{% endblock %}
 
 {% block body %}
-    <h2>Resources:</h2>
-
     <ul>
         {% for r in resources %}
             <li><a href="/resources/{{ r["id"] }}">Resource {{ r["id"] }}</a></li>
