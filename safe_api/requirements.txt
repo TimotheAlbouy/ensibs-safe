@@ -1,7 +1,4 @@
 flask
-requests
 pyzmq
-pyjwt
 pymongo
-bcrypt
 flasgger
