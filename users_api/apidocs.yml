@@ -1,0 +1,105 @@
+swagger: '2.0'
+
+info:
+  title: Users API
+  description: An API allowing to log users in and register new ones.
+  version: 1.0
+
+paths:
+  /register:
+    post:
+      summary: Register a new user.
+      parameters:
+        - in: body
+          name: user
+          description: the user to create
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        201:
+          $ref: '#/components/responses/TokenResponse'
+        400:
+          $ref: '#/components/responses/ParametersError'
+        409:
+          $ref: '#/components/responses/ConflictError'
+  /login:
+    post:
+      summary: Log an user in.
+      parameters:
+        - in: body
+          name: user
+          description: the user to authenticate
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        200:
+          $ref: '#/components/responses/TokenResponse'
+        400:
+          $ref: '#/components/responses/ParametersError'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+
+definitions:
+  User:
+    type: object
+    properties:
+      username:
+        type: string
+        required: true
+        example: admin
+      password:
+        type: string
+        required: true
+        example: root
+
+components:
+  responses:
+    TokenResponse:
+      description: the JSON Web Token
+      schema:
+        type: object
+        properties:
+          token:
+            type: string
+            required: true
+            example: eyJ0eX...
+    ParametersError:
+      description: some parameters are missing or invalid
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Username too short
+    AuthenticationError:
+      description: the authentication credentials are incorrect
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Incorrect username/password
+    NotFoundError:
+      description: the resource does not exist
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: User not found
+    ConflictError:
+      description: the resource conflicts with another already existing resource
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Username already taken

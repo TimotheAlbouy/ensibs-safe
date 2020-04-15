@@ -4,8 +4,8 @@
 
 {% block body %}
     <ul>
-        {% for r in resources %}
-            <li><a href="/resources/{{ r["id"] }}">Resource {{ r["id"] }}</a></li>
-        {% endfor %}
+    {% for r in resources %}
+        <li><a href="/resources/{{ r["id"] }}">Resource {{ r["id"] }}</a></li>
+    {% endfor %}
     </ul>
 {% endblock %}

@@ -4,10 +4,12 @@ from flask import Flask, request
 import pymongo
 import zmq
 import bcrypt
+from flasgger import Swagger
 
 from constants import ZMQ_HOST, ZMQ_PORT, API_PORT
 
 app = Flask(__name__)
+Swagger(app, template_file="apidocs.yml")
 
 dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = dbclient.cybersafe
@@ -37,9 +39,9 @@ def register():
     if "password" not in req:
         return {"error": "Missing password parameter"}, 400
     if len(req["username"]) < 3:
-        return {"error": "The username is too short"}, 400
+        return {"error": "Username too short"}, 400
     if len(req["password"]) < 3:
-        return {"error": "The password is too short"}, 400
+        return {"error": "Password too short"}, 400
 
     user = db.users.find_one({"username": req["username"]})
     if user is not None:

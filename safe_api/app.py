@@ -4,10 +4,12 @@ from flask import Flask, request
 import pymongo
 from bson.objectid import ObjectId
 import zmq
+from flasgger import Swagger
 
 from constants import ZMQ_HOST, ZMQ_PORT, API_PORT
 
 app = Flask(__name__)
+Swagger(app, template_file="apidocs.yml")
 
 dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = dbclient.cybersafe

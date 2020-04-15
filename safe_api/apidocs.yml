@@ -1,0 +1,121 @@
+swagger: '2.0'
+
+info:
+  title: Safe API
+  description: An API allowing to create and retrieve protected resources.
+  version: 1.0
+
+paths:
+  /resources/{id}:
+    get:
+      summary: Retrieve a specific protected resource.
+      parameters:
+        - in: path
+          name: id
+          description: the resource ID
+          required: true
+          schema:
+            type: string
+            example: 5e9258b4f61e5d0d50a8ff0b
+      responses:
+        200:
+          description: the protected resource
+          schema:
+            type: object
+            properties:
+              content:
+                type: string
+                required: true
+                example: This is a secret text
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+        404:
+          $ref: '#/components/responses/NotFoundError'
+  /resources:
+    get:
+      summary: Retrieve all the resource IDs.
+      responses:
+        200:
+          description: the protected resource IDs
+          schema:
+            type: object
+            properties:
+              resources:
+                type: array
+                required: true
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+            example:
+              resources:
+                - id: 5e9258b4f61e5d0d50a8ff0b
+                - id: 5e949cb1c56936eb8d4b9489
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+    post:
+      summary: Create a new protected resource.
+      parameters:
+        - in: body
+          name: resource
+          description: the content of the new resource
+          required: true
+          schema:
+            type: object
+            properties:
+              content:
+                type: string
+                required: true
+                example: Nuclear code = hello123
+      responses:
+        201:
+          description: the protected resource IDs
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: 5e949cb1c56936eb8d4b9489
+        400:
+          $ref: '#/components/responses/ParametersError'
+        401:
+          $ref: '#/components/responses/AuthenticationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    ParametersError:
+      description: some parameters are missing or invalid
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Missing content parameter
+    AuthenticationError:
+      description: access token is missing or invalid
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Authentication failed
+    NotFoundError:
+      description: the resource does not exist
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            required: true
+            example: Resource not found
+
+security:
+  - bearerAuth: []

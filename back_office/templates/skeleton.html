@@ -20,7 +20,8 @@
     <ul>
         <li><a href="/">Home</a></li>
         {% if session["username"] %}
-            <li><a href="/resources">Protected resources</a></li>
+            <li><a href="/resources">List resources</a></li>
+            <li><a href="/create-resource">Create new resource</a></li>
             <li><a href="/logout">Logout</a></li>
         {% else %}
             <li><a href="/login">Login</a></li>
