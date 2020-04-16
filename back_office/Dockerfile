@@ -1,9 +1,5 @@
 FROM python:3.7
-
 WORKDIR .
-
-RUN pip install -r requirements.txt
-
 COPY . .
-
-CMD ["python", "app.py"]
+RUN pip install -r requirements.txt
+CMD python app.py
