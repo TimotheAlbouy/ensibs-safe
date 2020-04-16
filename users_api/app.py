@@ -18,13 +18,17 @@ context = zmq.Context()
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
 
+# keys: username, value: (token, expiration date)
+whitelist = {}
+
 
 def sign_token(username):
     token_req = {
         "action": "sign",
         "username": username
     }
-    socket.send(json.dumps(token_req).encode("utf-8"))
+    data = json.dumps(token_req).encode("utf-8")
+    socket.send(data)
     token_res = json.loads(socket.recv().decode("utf-8"))
     return token_res["token"]
 

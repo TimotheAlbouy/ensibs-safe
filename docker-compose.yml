@@ -3,23 +3,45 @@ version: "3"
 services:
   database:
     image: mongo:4.2
+  networks:
+    - database-n
 
   users_api:
     build: users_api/
     ports:
       - "5500:5500"
+    networks:
+      - frontend-n
+      - token-n
+      - database-n
 
   safe_api:
     build: safe_api/
     ports:
       - "5501:5501"
+    networks:
+      - frontend-n
+      - token-n
+      - database-n
 
   token_dealer:
     build: token_dealer/
     ports:
       - "5502:5502"
+    networks:
+      - token-n
 
   back_office:
     build: back_office/
     ports:
       - "5503:5503"
+
+networks:
+  frontend-n:
+    driver: bridge
+  token-n:
+    driver: bridge
+    internal: true
+  database-n:
+    driver: bridge
+    internal: true

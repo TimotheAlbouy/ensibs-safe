@@ -18,6 +18,9 @@ context = zmq.Context()
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
 
+# keys: token, value: expiration date
+whitelist = {}
+
 
 def verify_token():
     if "Authorization" not in request.headers:
