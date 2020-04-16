@@ -1,12 +1,10 @@
-import json
-
 from flask import Flask, request
 import pymongo
-import zmq
 import bcrypt
 from flasgger import Swagger
 
-from constants import ZMQ_HOST, ZMQ_PORT, API_HOST, API_PORT
+from constants import API_HOST, API_PORT
+from token_zmq import sign_token
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
@@ -14,27 +12,9 @@ Swagger(app, template_file="apidocs.yml")
 dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = dbclient.cybersafe
 
-context = zmq.Context()
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
-
-# keys: username, value: (token, expiration date)
-whitelist = {}
-
-
-def sign_token(username):
-    token_req = {
-        "action": "sign",
-        "username": username
-    }
-    data = json.dumps(token_req).encode("utf-8")
-    socket.send(data)
-    token_res = json.loads(socket.recv().decode("utf-8"))
-    return token_res["token"]
-
 
 @app.route("/register", methods=["POST"])
-def register():
+async def register():
     req = request.json
     if type(req) is not dict:
         return {"error": "Incorrect payload"}, 400
@@ -57,13 +37,13 @@ def register():
         "password_hash": password_hash
     })
 
-    token = sign_token(req["username"])
+    token = await sign_token(req["username"])
     res = {"token": token}
     return res, 201
 
 
 @app.route("/login", methods=["POST"])
-def login():
+async def login():
     req = request.json
     if type(req) is not dict:
         return {"error": "Incorrect payload"}, 400
@@ -79,7 +59,7 @@ def login():
     if not bcrypt.checkpw(req["password"].encode("utf-8"), user["password_hash"]):
         return {"error": "Incorrect username/password"}, 401
 
-    token = sign_token(req["username"])
+    token = await sign_token(req["username"])
     res = {"token": token}
     return res, 200
 

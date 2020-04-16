@@ -12,22 +12,24 @@ socket.bind("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
 
 
 def sign(username):
+    iat = datetime.datetime.utcnow()
+    exp = iat + datetime.timedelta(hours=1)
     token = jwt.encode({
-        "iat": datetime.datetime.utcnow(),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        "iat": iat,
+        "exp": exp,
         "iss": JWT_ISSUER,
         "sub": username
     }, JWT_SECRET, algorithm=JWT_ALGO).decode("utf-8")
-    return token
+    return token, exp
 
 
 def verify(token):
     try:
         # add admin claim?
         data = jwt.decode(token.encode("utf-8"), JWT_SECRET, issuer=JWT_ISSUER, algorithm=JWT_ALGO)
-        return True, data["sub"]
+        return True, data["sub"], data["iat"]
     except jwt.InvalidTokenError:
-        return False, None
+        return False, None, None
 
 
 def handle_request(data):
@@ -43,17 +45,18 @@ def handle_request(data):
     if data["action"] == "sign":
         if "username" not in data:
             return {"error": "Missing username parameter"}
-        token = sign(data["username"])
-        return {"token": token}
+        token, expiration = sign(data["username"])
+        return {"token": token, "expiration": expiration}
 
     # If it is a verification request
     if data["action"] == "verify":
         if "token" not in data:
             return {"error": "Missing token parameter"}
-        valid, username = verify(data["token"])
+        valid, username, expiration = verify(data["token"])
         ret = {"valid": valid}
         if valid:
             ret["username"] = username
+            ret["expiration"] = expiration
         return ret
 
     # If the given action is incorrect

@@ -1,44 +1,16 @@
-import json
-
 from flask import Flask, request
 import pymongo
 from bson.objectid import ObjectId
-import zmq
 from flasgger import Swagger
 
-from constants import ZMQ_HOST, ZMQ_PORT, API_HOST, API_PORT
+from constants import API_HOST, API_PORT
+from token_zmq import verify_token
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
 
 dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
 db = dbclient.cybersafe
-
-context = zmq.Context()
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
-
-# keys: token, value: expiration date
-whitelist = {}
-
-
-def verify_token():
-    if "Authorization" not in request.headers:
-        return False
-
-    header = request.headers["Authorization"]
-    if not header.startswith("Bearer ") or len(header) < 8:
-        return False
-
-    token = header[7:]
-    token_req = {
-        "action": "verify",
-        "token": token
-    }
-    socket.send(json.dumps(token_req).encode("utf-8"))
-    token_res = json.loads(socket.recv().decode("utf-8"))
-
-    return token_res["valid"]
 
 
 @app.route("/resources/<string:id>", methods=["GET"])
