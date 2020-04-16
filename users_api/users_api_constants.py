@@ -1,4 +1,4 @@
-ZMQ_HOST = "localhost"
+ZMQ_HOST = "0.0.0.0"
 ZMQ_PORT = 5502
 API_HOST = "0.0.0.0"
 API_PORT = 5500
