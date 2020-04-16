@@ -3,8 +3,8 @@ import pymongo
 from bson.objectid import ObjectId
 from flasgger import Swagger
 
-from constants import API_HOST, API_PORT
-from token_zmq import verify_token
+from safe_api_constants import API_HOST, API_PORT
+from token_verification import verify_token, verify_token_errors
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
@@ -15,9 +15,9 @@ db = dbclient.cybersafe
 
 @app.route("/resources/<string:id>", methods=["GET"])
 def get_resource(id):
-    valid_token = verify_token()
-    if not valid_token:
-        return {"error": "Authentication failed"}, 401
+    status = verify_token()
+    if status != 200:
+        return {"error": verify_token_errors[status]}, status
 
     resource = db.resources.find_one({"_id": ObjectId(id)})
     if resource is None:
@@ -29,9 +29,9 @@ def get_resource(id):
 
 @app.route("/resources", methods=["POST"])
 def create_resource():
-    valid_token = verify_token()
-    if not valid_token:
-        return {"error": "Authentication failed"}, 401
+    status = verify_token()
+    if status != 200:
+        return {"error": verify_token_errors[status]}, status
 
     req = request.json
     if type(req) is not dict:
@@ -47,9 +47,9 @@ def create_resource():
 
 @app.route("/resources", methods=["GET"])
 def get_resources():
-    valid_token = verify_token()
-    if not valid_token:
-        return {"error": "Authentication failed"}, 401
+    status = verify_token()
+    if status != 200:
+        return {"error": verify_token_errors[status]}, status
 
     resources = [{"id": str(r["_id"])} for r in db.resources.find({}, {"content": 0})]
     res = {"resources": resources}

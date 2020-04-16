@@ -3,8 +3,8 @@ import pymongo
 import bcrypt
 from flasgger import Swagger
 
-from constants import API_HOST, API_PORT
-from token_zmq import sign_token
+from users_api_constants import API_HOST, API_PORT
+from token_signing import sign_token
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
@@ -14,7 +14,7 @@ db = dbclient.cybersafe
 
 
 @app.route("/register", methods=["POST"])
-async def register():
+def register():
     req = request.json
     if type(req) is not dict:
         return {"error": "Incorrect payload"}, 400
@@ -31,19 +31,22 @@ async def register():
     if user is not None:
         return {"error": "Username already taken"}, 409
 
+    token = sign_token(req["username"])
+    if token is None:
+        return {"error": "Token dealer unavailable"}, 503
+
     password_hash = bcrypt.hashpw(req["password"].encode("utf-8"), bcrypt.gensalt())
     db.users.insert_one({
         "username": req["username"],
         "password_hash": password_hash
     })
 
-    token = await sign_token(req["username"])
     res = {"token": token}
     return res, 201
 
 
 @app.route("/login", methods=["POST"])
-async def login():
+def login():
     req = request.json
     if type(req) is not dict:
         return {"error": "Incorrect payload"}, 400
@@ -59,7 +62,10 @@ async def login():
     if not bcrypt.checkpw(req["password"].encode("utf-8"), user["password_hash"]):
         return {"error": "Incorrect username/password"}, 401
 
-    token = await sign_token(req["username"])
+    token = sign_token(req["username"])
+    if token is None:
+        return {"error": "Token dealer unavailable"}, 503
+
     res = {"token": token}
     return res, 200
 

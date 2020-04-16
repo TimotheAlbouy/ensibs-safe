@@ -1,15 +1,20 @@
-import json
-import time
 from datetime import datetime
+from threading import Thread
 
 from flask import request
 import zmq
 
-from constants import ZMQ_HOST, ZMQ_PORT
+from users_api_constants import ZMQ_HOST, ZMQ_PORT
 
 context = zmq.Context()
 socket = context.socket(zmq.REQ)
 socket.connect("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
+
+verify_token_errors = {
+    400: "Authorization header missing or invalid",
+    401: "Authentication failed",
+    503: "Token dealer unavailable"
+}
 
 # key: token, value: expiration date
 whitelist = {}
@@ -18,18 +23,18 @@ whitelist = {}
 def verify_token():
     # retrieve the token from the header
     if "Authorization" not in request.headers:
-        return False
+        return 400
     header = request.headers["Authorization"]
     if not header.startswith("Bearer ") or len(header) < 8:
-        return False
+        return 400
     token = header[7:]
 
     # if the token is in the whitelist
     if token in whitelist:
         expiration = whitelist[token]
-        # if the token has not expired, return it
+        # if the token has not expired, return that it is valid
         if not is_past(expiration):
-            return token
+            return 200
         # otherwise remove it
         whitelist.pop(token)
 
@@ -38,20 +43,24 @@ def verify_token():
         "action": "verify",
         "token": token
     }
-    data = json.dumps(token_req).encode("utf-8")
-    socket.send(data)
-    token_res = json.loads(socket.recv().decode("utf-8"))
+    socket.send_json(token_req)
+    if not socket.poll(1000):
+        t = Thread(None, verify_token_parallel, None, (token,))
+        t.start()
+        return 503
+    token_res = socket.recv_json()
 
     # if the token is valid, save it and its expiration date in the whitelist
     valid = token_res["valid"]
     if valid:
         whitelist[token] = token_res["expiration"]
 
-    return valid
+    return 200
 
 
-def verify_token_async():
-    return
+def verify_token_parallel(token):
+    token_res = socket.recv_json()
+    whitelist[token] = token_res["expiration"]
 
 
 def is_past(timestamp):

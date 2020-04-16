@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session, request, redirect
 import requests
 
-from constants import USERS_API, SAFE_API, SECRET_KEY, BO_HOST, BO_PORT
+from back_office_constants import USERS_API, SAFE_API, SECRET_KEY, BO_HOST, BO_PORT
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
