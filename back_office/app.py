@@ -14,7 +14,7 @@ def index():
 
 @app.route("/apidocs")
 def apidocs():
-    return render_template("apidocs.html", users_api=USERS_API, safe_api=SAFE_API)
+    return render_template("apidocs.html")
 
 
 @app.route("/resources")

@@ -4,7 +4,7 @@ from threading import Thread
 from flask import request
 import zmq
 
-from users_api_constants import ZMQ_HOST, ZMQ_PORT
+from safe_api_constants import ZMQ_HOST, ZMQ_PORT
 
 context = zmq.Context()
 socket = context.socket(zmq.REQ)

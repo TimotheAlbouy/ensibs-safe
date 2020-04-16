@@ -3,13 +3,13 @@ import pymongo
 import bcrypt
 from flasgger import Swagger
 
-from users_api_constants import API_HOST, API_PORT
+from users_api_constants import MONGODB, API_HOST, API_PORT
 from token_signing import sign_token
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
 
-dbclient = pymongo.MongoClient("mongodb://localhost:27017/")
+dbclient = pymongo.MongoClient(MONGODB)
 db = dbclient.cybersafe
 
 

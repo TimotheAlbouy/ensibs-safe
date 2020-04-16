@@ -3,7 +3,7 @@
 {% block title %}API documentation{% endblock %}
 
 {% block body %}
-    <h2>Users API: {{ users_api }}</h2>
+    <h2>Users API</h2>
 
     <table>
         <tr>
@@ -29,7 +29,7 @@
         </tr>
     </table>
 
-    <h2>Safe API: {{ safe_api }}</h2>
+    <h2>Safe API</h2>
 
     <table>
         <tr>
@@ -40,7 +40,7 @@
             <th>Description</th>
         </tr>
         <tr>
-            <th>GET</th>
+            <td>GET</td>
             <td>/resources</td>
             <td>/</td>
             <td>Yes</td>
@@ -50,14 +50,14 @@
             <td>GET</td>
             <td>/resources/&lt;id&gt;</td>
             <td>/</td>
-            <th>Yes</th>
+            <td>Yes</td>
             <td>Get the resource identified by the given ID</td>
         </tr>
         <tr>
             <td>POST</td>
             <td>/resources</td>
             <td>string:content</td>
-            <th>Yes</th>
+            <td>Yes</td>
             <td>Create the resource with the given content</td>
         </tr>
     </table>

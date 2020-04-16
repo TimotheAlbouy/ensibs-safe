@@ -3,11 +3,11 @@ import datetime
 import zmq
 import jwt
 
-from token_dealer_constants import JWT_SECRET, JWT_ISSUER, JWT_ALGO, ZMQ_HOST, ZMQ_PORT
+from token_dealer_constants import JWT_SECRET, JWT_ISSUER, JWT_ALGO, ZMQ_PORT
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
-socket.bind("tcp://%s:%s" % (ZMQ_HOST, ZMQ_PORT))
+socket.bind("tcp://*:%s" % ZMQ_PORT)
 
 
 def sign(username):
@@ -63,7 +63,7 @@ def handle_request(data):
 
 
 if __name__ == "__main__":
-    print("Token dealer listening on %s:%s." % (ZMQ_HOST, ZMQ_PORT))
+    print("Listening on port %s." % ZMQ_PORT)
     while True:
         # Wait for the next request from the client
         req = socket.recv_json()
