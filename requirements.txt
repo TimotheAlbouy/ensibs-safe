@@ -1,0 +1,7 @@
+flask
+pyzmq
+pymongo
+pyjwt
+bcrypt
+requests
+flasgger

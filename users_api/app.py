@@ -6,7 +6,7 @@ import zmq
 import bcrypt
 from flasgger import Swagger
 
-from constants import ZMQ_HOST, ZMQ_PORT, API_PORT
+from constants import ZMQ_HOST, ZMQ_PORT, API_HOST, API_PORT
 
 app = Flask(__name__)
 Swagger(app, template_file="apidocs.yml")
@@ -81,4 +81,4 @@ def login():
 
 
 if __name__ == "__main__":
-    app.run(port=API_PORT)
+    app.run(host=API_HOST, port=API_PORT)

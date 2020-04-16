@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session, request, redirect
 import requests
 
-from constants import USERS_API, SAFE_API, SECRET_KEY, BO_PORT
+from constants import USERS_API, SAFE_API, SECRET_KEY, BO_HOST, BO_PORT
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -102,4 +102,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(port=BO_PORT)
+    app.run(host=BO_HOST, port=BO_PORT)
