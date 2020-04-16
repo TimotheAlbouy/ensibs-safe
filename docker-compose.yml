@@ -3,8 +3,8 @@ version: "3"
 services:
   database:
     image: mongo:4.2
-  networks:
-    - database-n
+    networks:
+      - database-n
 
   users_api:
     build: users_api/
@@ -35,6 +35,8 @@ services:
     build: back_office/
     ports:
       - "5503:5503"
+    networks:
+      - frontend-n
 
 networks:
   frontend-n:
